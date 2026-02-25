@@ -1,18 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import * as Haptics from "expo-haptics";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { questions } from "./data/questions";
 
-type Question = {
-  id: string;
-  a: string;
-  b: string;
-};
+type VoteCounts = { a: number; b: number };
+type VoteStats = Record<string, VoteCounts>;
 
-const questions: Question[] = [
-  { id: "q1", a: "Always have a wet sock", b: "Always feel like you forgot something" },
-  { id: "q2", a: "Send the wrong screenshot to the person you screenshotted", b: "Accidentally like your ex’s photo from 2016" },
-  { id: "q3", a: "Laugh at the wrong moment at a funeral", b: "Call your teacher 'mom' in a meeting" },
-];
+const STORAGE_KEY = "wyr:votes:v1";
 
 const accents = ["#A259FF", "#39FF14", "#FF2D95", "#00E5FF"];
 
@@ -20,18 +15,27 @@ function clampIndex(i: number, len: number) {
   return ((i % len) + len) % len;
 }
 
-function fakePercents(seed: number) {
-  const a = 42 + ((seed * 7) % 33);
+function getCounts(stats: VoteStats, qid: string): VoteCounts {
+  return stats[qid] ?? { a: 0, b: 0 };
+}
+
+function toPercents(counts: VoteCounts): { a: number; b: number } {
+  const total = counts.a + counts.b;
+  if (total <= 0) return { a: 50, b: 50 };
+  const a = Math.round((counts.a / total) * 100);
   return { a, b: 100 - a };
 }
 
 const RESULT_BLOCK_HEIGHT = 132;
-const CHOICE_MIN_HEIGHT = 150; // 👈 stabiliserar ramen
+const CHOICE_MIN_HEIGHT = 150;
 
 export default function Index() {
   const [index, setIndex] = useState(0);
   const [locked, setLocked] = useState(false);
   const [picked, setPicked] = useState<"A" | "B" | null>(null);
+
+  const [voteStats, setVoteStats] = useState<VoteStats>({});
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const nextTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const RESULT_MS = 3000;
@@ -40,7 +44,12 @@ export default function Index() {
 
   const q = useMemo(() => questions[clampIndex(index, questions.length)], [index]);
   const accent = useMemo(() => accents[clampIndex(index, accents.length)], [index]);
-  const { a: percentA, b: percentB } = useMemo(() => fakePercents(index + 1), [index]);
+
+  const countsForThisQuestion = useMemo(() => getCounts(voteStats, q.id), [voteStats, q.id]);
+  const { a: percentA, b: percentB } = useMemo(
+    () => toPercents(countsForThisQuestion),
+    [countsForThisQuestion]
+  );
 
   function clearTimer() {
     if (nextTimerRef.current) {
@@ -49,9 +58,29 @@ export default function Index() {
     }
   }
 
+  async function loadVotes() {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as VoteStats;
+      if (parsed && typeof parsed === "object") setVoteStats(parsed);
+    } catch {
+      // ignore (we can add logging later)
+    }
+  }
+
+  async function saveVotes(next: VoteStats) {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  }
+
   function nextQuestion() {
     clearTimer();
 
+    // Fade out result first so nothing "blinks" during transition
     Animated.timing(resultOpacity, {
       toValue: 0,
       duration: 140,
@@ -64,9 +93,24 @@ export default function Index() {
   }
 
   function showResult(choice: "A" | "B") {
+    if (locked) return;
+
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     setPicked(choice);
     setLocked(true);
+
+    // Update local vote stats for this question
+    setVoteStats((prev) => {
+      const current = getCounts(prev, q.id);
+      const nextCounts: VoteCounts =
+        choice === "A"
+          ? { a: current.a + 1, b: current.b }
+          : { a: current.a, b: current.b + 1 };
+
+      const next: VoteStats = { ...prev, [q.id]: nextCounts };
+      void saveVotes(next); // persist, no await to keep UI snappy
+      return next;
+    });
 
     Animated.timing(resultOpacity, {
       toValue: 1,
@@ -80,6 +124,10 @@ export default function Index() {
   }
 
   useEffect(() => {
+    (async () => {
+      await loadVotes();
+      setIsLoaded(true);
+    })();
     return () => clearTimer();
   }, []);
 
@@ -93,12 +141,13 @@ export default function Index() {
       {/* ANSWERS FRAME */}
       <View style={[styles.answersFrame, { borderColor: accent }]}>
         <Pressable
-          disabled={locked}
+          disabled={!isLoaded || locked}
           onPress={() => showResult("A")}
           style={[
             styles.choice,
             aSelected && { borderColor: accent },
             locked && !aSelected && styles.choiceDim,
+            !isLoaded && styles.choiceDim,
           ]}
         >
           <Text style={styles.choiceLabel}>A</Text>
@@ -110,12 +159,13 @@ export default function Index() {
         <Text style={styles.or}>OR</Text>
 
         <Pressable
-          disabled={locked}
+          disabled={!isLoaded || locked}
           onPress={() => showResult("B")}
           style={[
             styles.choice,
             bSelected && { borderColor: accent },
             locked && !bSelected && styles.choiceDim,
+            !isLoaded && styles.choiceDim,
           ]}
         >
           <Text style={styles.choiceLabel}>B</Text>
@@ -168,24 +218,22 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 
-  // Slightly darker frame so choices pop
   answersFrame: {
-    backgroundColor: "#111111", // 👈 lite mörkare än knapparna
+    backgroundColor: "#111111",
     borderRadius: 22,
     borderWidth: 2,
     padding: 18,
     gap: 14,
   },
 
-  // Choice buttons: slightly lighter, close to frame color
   choice: {
-    minHeight: CHOICE_MIN_HEIGHT, // 👈 stabil höjd
+    minHeight: CHOICE_MIN_HEIGHT,
     borderRadius: 18,
     paddingVertical: 18,
     paddingHorizontal: 14,
     borderWidth: 1,
     borderColor: "#2A2A2A",
-    backgroundColor: "#171717", // 👈 lite ljusare än ramen
+    backgroundColor: "#171717",
     justifyContent: "center",
     gap: 10,
   },
