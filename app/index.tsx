@@ -280,6 +280,7 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 14,
   },
+  
   title: {
     color: "white",
     fontSize: 22,
@@ -292,20 +293,20 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 6,
     paddingRight: 6,
+    alignItems: "center",     // 👈 viktigt
   },
+
   chip: {
+    height: 60,
     borderWidth: 1,
     borderColor: "#2A2A2A",
     backgroundColor: "#0F0F0F",
-
-    paddingHorizontal: 14,
-    paddingVertical: 6, // 👈 mycket mindre
-
-    borderRadius: 8, // 👈 mindre radie
+    paddingHorizontal: 5,
+    borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
   },
-  
+
   chipActive: {
     borderColor: "#FFFFFF",
     backgroundColor: "#1B1B1B",
@@ -316,10 +317,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     letterSpacing: 1,
     textTransform: "uppercase",
-
-    lineHeight: 16, // 👈 kontrollerar vertikal balans
-    includeFontPadding: false, // 👈 Android fix
-    textAlignVertical: "center", // 👈 Android fix
+    lineHeight: 16,
+    includeFontPadding: false, // Android fix
+    textAlignVertical: "center", // Android fix
   },
 
   chipTextActive: {
@@ -334,6 +334,7 @@ const styles = StyleSheet.create({
     padding: 18,
     gap: 8,
   },
+
   emptyTitle: { color: "white", fontSize: 18, textAlign: "center" },
   emptyText: { color: "#9A9A9A", textAlign: "center" },
 
@@ -350,7 +351,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     letterSpacing: 3,
     fontSize: 12,
-    marginBottom: 2,
+    marginBottom: 1,
   },
 
   choice: {
@@ -364,6 +365,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 10,
   },
+
   choiceDim: { opacity: 0.35 },
 
   choiceLabel: {
@@ -372,12 +374,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: "center",
   },
+
   choiceText: {
     color: "white",
     fontSize: 18,
     textAlign: "center",
     lineHeight: 24,
   },
+
   or: {
     color: "#777",
     textAlign: "center",
@@ -387,6 +391,7 @@ const styles = StyleSheet.create({
   resultSlot: {
     minHeight: RESULT_BLOCK_HEIGHT,
   },
+
   resultWrap: {
     flex: 1,
   },
@@ -398,22 +403,27 @@ const styles = StyleSheet.create({
     backgroundColor: "#0B0B0B",
     gap: 10,
   },
+
   resultTitle: {
     color: "white",
     textAlign: "center",
     letterSpacing: 2,
   },
+
   resultRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 6,
   },
+
   resultPct: {
     color: "#9A9A9A",
     fontSize: 16,
   },
+
   resultFooter: {
     color: "#9A9A9A",
     textAlign: "center",
   },
+
 });
