@@ -449,19 +449,19 @@ const styles = StyleSheet.create({
   },
 
   // Hidden share
-  shareHidden: {
-    position: "absolute",
-    left: -9999,
-    top: 0,
-    width: 900,
-    height: 1600,
-    opacity: 0,
+shareHidden: {
+  position: "absolute",
+  left: -9999,
+  top: 0,
+  width: 1080,
+  height: 1920,
+  opacity: 0,
   },
 
   // Share card layout (9:16-ish)
   shareCard: {
-    width: 900,
-    height: 1600,
+    width: 1080,
+    height: 1920,
     backgroundColor: "#0B0B0B",
     padding: 64,
     gap: 24,
