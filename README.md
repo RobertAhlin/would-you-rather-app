@@ -1,4 +1,36 @@
-# Welcome to your Expo app 👋
+
+
+# Would You Rather
+## Welcome to your Expo app 👋
+
+A mobile “Would You Rather” game built with **React Native and Expo**.
+
+The app presents users with two difficult or absurd choices. After selecting an option, the user immediately sees how others voted and can move on to the next dilemma. Questions are organized by categories such as Absurd, Spicy, Mindfuck, and Social.
+
+The app also allows users to **share their choice as a stylized image** optimized for social media stories, making it easy to challenge friends and spark discussions.
+
+## Features
+
+- Category-based questions
+- Real-time vote percentages
+- Persistent local vote storage
+- Shareable story-style images for social media
+- Minimal dark neon-inspired UI
+- Built with Expo for fast development and testing
+
+## Tech Stack
+
+- React Native
+- Expo
+- TypeScript
+- AsyncStorage
+- react-native-view-shot
+- expo-sharing
+- expo-haptics
+
+## Goal
+
+The goal of the project is to create a **simple, viral-friendly social game** where users can quickly answer fun dilemmas and share them with friends.
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 

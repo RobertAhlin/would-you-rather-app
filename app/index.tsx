@@ -3,7 +3,7 @@ import { Animated, Pressable, ScrollView, Text, View } from "react-native";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Sharing from "expo-sharing";
-import ViewShot, { type ViewShot as ViewShotType } from "react-native-view-shot";
+import ViewShot from "react-native-view-shot";
 
 import { categories, questions } from "./data/questions";
 import type { Category } from "./data/questions";
@@ -32,9 +32,6 @@ function toPercents(counts: VoteCounts): { a: number; b: number } {
   return { a, b: 100 - a };
 }
 
-const RESULT_BLOCK_HEIGHT = 132;
-const CHOICE_MIN_HEIGHT = 150;
-
 const accentPalette = ["#A259FF", "#39FF14", "#FF2D95", "#00E5FF"];
 
 export default function Index() {
@@ -52,7 +49,7 @@ export default function Index() {
 
   const resultOpacity = useRef(new Animated.Value(0)).current;
 
-  const shareShotRef = useRef<ViewShotType | null>(null);
+  const shareShotRef = useRef<ViewShot | null>(null);
   const [isSharing, setIsSharing] = useState(false);
 
   const filteredQuestions = useMemo(() => {
